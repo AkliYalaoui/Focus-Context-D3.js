@@ -57,6 +57,16 @@ var line2 = d3
     return y2(d.price);
   });
 
+var line3 = d3
+  .line()
+  .curve(d3.curveCardinal)
+  .x(function (d) {
+    return d[0];
+  })
+  .y(function (d) {
+    return d[1];
+  });
+
 svg
   .append("defs")
   .append("clipPath")
@@ -82,11 +92,8 @@ var legend = svg
     "transform",
     "translate(" + margin2.left + "," + (height - margin2.bottom + 20) + ")"
   );
-// instantier le fisheye
-const fisheye = d3.fisheye.circular().radius(200).distortion(2);
-svg.on("mousemove", function () {
-  fisheye.focus(d3.mouse(this));
-})
+  
+const fisheye = d3.fisheye.circular().radius(200).distortion(2)
 
 d3.csv("data/litecoin.csv", type5, function (error, data) {
   if (error) throw error;
@@ -178,6 +185,23 @@ d3.csv("data/ethereum.csv", type3, function (error, data) {
     .style("stroke", "#FC1212");
 });
 
+
+svg.on("mousemove", function () {
+  fisheye.focus(d3.mouse(this));
+  focus.selectAll(".line").attr("d",fishline);
+})
+
+function fishline(d){
+
+  return line3(d?.map(function(a){
+    // console.log(a.name);
+    a = fisheye({x:x(a.date),y:y(a.price)});
+    return[a.x,a.y];
+  }));
+
+}
+
+
 function brushed() {
   if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom") return; // ignore brush-by-zoom
   var s = d3.event.selection || x2.range();
@@ -205,18 +229,24 @@ function type3(d) {
   d.date = parseDate(d.date);
   d.price = +d.price;
   d.name = "ethereum";
+  d.y = d.price;
+  d.x = d.date;
   return d;
 }
 function type4(d) {
   d.date = parseDate(d.date);
   d.price = +d.price;
   d.name = "binance";
+  d.y = d.price;
+  d.x = d.date;
   return d;
 }
 function type5(d) {
   d.date = parseDate(d.date);
   d.price = +d.price;
   d.name = "litecoin";
+  d.y = d.price;
+  d.x = d.date;
   return d;
 }
 
